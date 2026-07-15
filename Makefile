@@ -36,7 +36,8 @@ OUTPUT_FLAG       := $(if $(OUTPUT_FOLDER),--output-folder $(OUTPUT_FOLDER))
 SIMB_CONDA_CHANNEL:= -c https://conda.simbricks.io/latest
 BASE_BUILD_CMD    := conda build $(SIMB_CONDA_CHANNEL) -m conda-recipes/conda_build_config.yaml $(OUTPUT_FLAG)
 
-.PHONY: all conda-packages pypi-build pypi-publish clean ns3-python-develop
+.PHONY: all conda-packages pypi-build pypi-publish clean ns3-python-develop \
+	ns3-sim-py-conda
 
 ## --- Python packages -------------------------------------------------------
 
@@ -46,7 +47,10 @@ ns3-python-develop:
 
 ## --- Conda packages --------------------------------------------------------
 
-conda-packages:
+ns3-sim-py-conda:
+	$(BASE_BUILD_CMD) conda-recipes/simbricks-ns3-sim-py
+
+conda-packages: ns3-sim-py-conda
 
 ## --- PyPI packages ---------------------------------------------------------
 
