@@ -68,3 +68,4 @@ all: conda-packages
 ## --- Housekeeping ----------------------------------------------------------
 
 clean:
+	rm -rf $(NS3_PY_SIM)/dist
