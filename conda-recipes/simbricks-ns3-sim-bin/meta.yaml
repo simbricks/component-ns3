@@ -20,12 +20,41 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-# Shared variables consumed by every recipe in this repo via
-#   conda build -m conda-recipes/conda_build_config.yaml <recipe>
+package:
+  name: simbricks-ns3-sim-bin
+  version: {{ simbricks_version }}
 
-simbricks_version:
-  - "0.4.2"
-homepage:
-  - "https://www.simbricks.io/"
-github_org:
-  - "https://github.com/simbricks/simbricks"
+source:
+  # Build from the repo root, which holds the top-level Makefile and the ns-3/
+  # submodule with the ns-3 sources.
+  path: ../../
+
+build:
+  number: 0
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ stdlib('c') }}
+    - make
+    - cmake
+    - ninja
+    - pkg-config
+
+  host:
+    - simbricks-lib >=0.4.2
+    - libsqlite
+    - python
+
+  run:
+    - simbricks-ns3-sim-py =={{ simbricks_version }}
+
+about:
+  home: {{ homepage }}
+  license: GPL-2.0
+  license_family: GPL2
+  license_file:
+    - ns-3/LICENSE
+  summary: SimBricks-adapted ns-3 simulator for full-system network simulation.
+  dev_url: {{ github_org }}
