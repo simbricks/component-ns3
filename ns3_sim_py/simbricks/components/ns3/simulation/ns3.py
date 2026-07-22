@@ -22,6 +22,7 @@
 
 from __future__ import annotations
 
+import abc
 import pathlib
 import typing_extensions as tpe
 
@@ -42,42 +43,41 @@ class SimpleNS3Sim(sim_net.NetSim):
     def __init__(
         self,
         simulation: sim_base.Simulation,
-        name: str = "SimpleNS3Sim",
-        ns3_run_script: str = "",
+        executable: str,
+        name: str = "",
     ) -> None:
         super().__init__(
             simulation=simulation,
-            executable="sims/external/ns-3/simbricks-run.sh",
+            executable=executable,
             name=name,
         )
-        self._ns3_run_script: str = ns3_run_script
         self.opt: str | None = None
 
     def toJSON(self) -> dict:
         json_obj = super().toJSON()
-        json_obj["ns3_run_script"] = self._ns3_run_script
         json_obj["opt"] = self.opt
         return json_obj
 
     @classmethod
     def fromJSON(cls, simulation: sim_base.Simulation, json_obj: dict) -> tpe.Self:
         instance = super().fromJSON(simulation, json_obj)
-        instance._ns3_run_script = utils_base.get_json_attr_top(
-            json_obj, "ns3_run_script"
-        )
         instance.opt = utils_base.get_json_attr_top_or_none(json_obj, "opt")
         return instance
 
+    abc.abstractmethod
     def run_cmd(self, inst: inst_base.Instantiation) -> str:
-        return f"{inst.env.repo_base(self._executable)} {self._ns3_run_script} "
+        if self.opt is not None:
+            return f"{self._executable} {self.opt} "
+        else:
+            return f"{self._executable} "
 
 
 class NS3DumbbellNet(SimpleNS3Sim):
 
     def __init__(self, simulation: sim_base.Simulation) -> None:
         super().__init__(
-            simulation=simulation,
-            ns3_run_script="simbricks-dumbbell-example",
+            simulation,
+            "simbricks-ns3-dumbbell",
         )
         self.name = f"NS3DumbbellNet-{self._id}"
         self._left: sys_eth.EthSwitch | None = None
@@ -127,10 +127,6 @@ class NS3DumbbellNet(SimpleNS3Sim):
             assert sock._type == inst_socket.SockType.CONNECT
             cmd += f"--SimbricksPortRight={sock._path} "
 
-        if self.opt is not None:
-            cmd += f"{self.opt}"
-
-        print(cmd)
         return cmd
 
 
@@ -138,8 +134,8 @@ class NS3BridgeNet(SimpleNS3Sim):
 
     def __init__(self, simulation: sim_base.Simulation) -> None:
         super().__init__(
-            simulation=simulation,
-            ns3_run_script="simbricks-bridge-example",
+            simulation,
+            "simbricks-ns3-bridge",
         )
         self.name = f"NS3BridgeNet-{self._id}"
 
@@ -156,7 +152,6 @@ class NS3BridgeNet(SimpleNS3Sim):
     @classmethod
     def fromJSON(cls, simulation: sim_base.Simulation, json_obj: dict) -> tpe.Self:
         instance = super().fromJSON(simulation, json_obj)
-        # TODO: FIXME
         return instance
 
     def run_cmd(self, inst: inst_base.Instantiation) -> str:
@@ -166,16 +161,13 @@ class NS3BridgeNet(SimpleNS3Sim):
         for sock in sockets:
             cmd += f"--SimbricksPort={sock._path} "
 
-        if self.opt is not None:
-            cmd += f"{self.opt}"
-
         return cmd
 
 
 class NS3Net(SimpleNS3Sim):
 
     def __init__(self, simulation: sim_base.Simulation):
-        super().__init__(simulation, ns3_run_script="e2e-cc-example")
+        super().__init__(simulation, "simbricks-ns3-net")
         self.name = f"NS3Net-{self._id}"
         self.use_file = True
         self.global_conf = ns3_comps.NS3GlobalConfig()
@@ -296,10 +288,6 @@ class NS3Net(SimpleNS3Sim):
         params.append(self.logging.ns3_config())
         for component in ns3c:
             params.append(component.ns3_config())
-
-        #params.append(" ".join([f"--{k}={v}" for k,v in self.opts.items()]))
-        if self.opt:
-            params.append(self.opt)
 
         params_str = "\n".join(params)
 
