@@ -41,11 +41,11 @@ requirements:
     - cmake
     - ninja
     - pkg-config
+    - python
 
   host:
     - simbricks-lib >=0.4.2
     - libsqlite
-    - python
 
   run:
     - simbricks-ns3-sim-py =={{ simbricks_version }}
