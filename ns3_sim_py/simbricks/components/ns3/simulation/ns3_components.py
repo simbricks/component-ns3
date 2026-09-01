@@ -310,7 +310,7 @@ class NS3SimpleChannel(NS3TopologyChannel):
         self.queue_size = self.get_parameter(channel, 'queue_size')
         self.channel_type = self.get_parameter(channel, 'channel_type',
                                                'ns3::SimpleChannel')
-        self.delay = f'{channel.latency}ns'
+        self.delay = f'{channel.latency.picoseconds}ps'
         self.left_node: NS3TopologyNode
         self.right_node: NS3TopologyNode
         if 'ns3_params' in channel.parameters:
@@ -362,11 +362,11 @@ class NS3NetworkSimbricks(NS3Network):
         super().__init__(f'{name}-{comp.id()}')
         self.type = 'Simbricks'
         self.unix_socket = socket._path
-        self.sync_delay = f'{chan.sync_period}ns'
+        self.sync_delay = f'{chan.sync_period.picoseconds}ps'
         #TODO: currently we have no field for the poll delay,
         # set it for now to sync delay
-        self.poll_delay = f'{chan.sync_period}ns'
-        self.eth_latency = f'{chan.sys_channel.latency}ns'
+        self.poll_delay = f'{chan.sync_period.picoseconds}ps'
+        self.eth_latency = f'{chan.sys_channel.latency.picoseconds}ps'
         self.listen = socket._type == inst_socket.SockType.LISTEN
         self.shm_path = ''
         self.sync = '1' if chan._synchronized else '0'
@@ -443,7 +443,7 @@ class NS3SimpleHost(NS3Host):
         if len(host.channels()) != 1:
             raise RuntimeError("SimpleHost must be connected to exactly one "
                                "switch")
-        self.delay = f'{host.channels()[0].latency}ns'
+        self.delay = f'{host.channels()[0].latency.picoseconds}ps'
         self.congestion_control = self.get_parameter(host, 'congestion_control')
         # TODO: this should actually come from a NIC
         self.ip = self.get_parameter(host, 'ip')
