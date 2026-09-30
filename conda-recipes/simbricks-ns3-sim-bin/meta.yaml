@@ -44,7 +44,7 @@ requirements:
     - python
 
   host:
-    - simbricks-lib >=0.5.0
+    - simbricks-lib >=0.6.0
     - libsqlite
 
   run:
